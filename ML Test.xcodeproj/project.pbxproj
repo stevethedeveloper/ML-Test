@@ -16,6 +16,7 @@
 		AA32791E2989E05A008DF17E /* ML_TestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA32791D2989E05A008DF17E /* ML_TestTests.swift */; };
 		AA3279282989E05A008DF17E /* ML_TestUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA3279272989E05A008DF17E /* ML_TestUITests.swift */; };
 		AA32792A2989E05A008DF17E /* ML_TestUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA3279292989E05A008DF17E /* ML_TestUITestsLaunchTests.swift */; };
+		AA3279392989E0A8008DF17E /* SqueezeNet.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = AA3279382989E0A7008DF17E /* SqueezeNet.mlmodel */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +50,7 @@
 		AA3279232989E05A008DF17E /* ML TestUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ML TestUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA3279272989E05A008DF17E /* ML_TestUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ML_TestUITests.swift; sourceTree = "<group>"; };
 		AA3279292989E05A008DF17E /* ML_TestUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ML_TestUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		AA3279382989E0A7008DF17E /* SqueezeNet.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = SqueezeNet.mlmodel; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,6 +108,7 @@
 				AA32790F2989E05A008DF17E /* Assets.xcassets */,
 				AA3279112989E05A008DF17E /* LaunchScreen.storyboard */,
 				AA3279142989E05A008DF17E /* Info.plist */,
+				AA3279382989E0A7008DF17E /* SqueezeNet.mlmodel */,
 			);
 			path = "ML Test";
 			sourceTree = "<group>";
@@ -261,6 +264,7 @@
 				AA32790B2989E058008DF17E /* ViewController.swift in Sources */,
 				AA3279072989E058008DF17E /* AppDelegate.swift in Sources */,
 				AA3279092989E058008DF17E /* SceneDelegate.swift in Sources */,
+				AA3279392989E0A8008DF17E /* SqueezeNet.mlmodel in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
