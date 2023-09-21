@@ -5,12 +5,15 @@
 //  Created by Stephen Walton on 1/31/23.
 //
 
+// Needs camera permissions
+
 import UIKit
 import AVFoundation
 import Vision
 
 class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDelegate {
 
+    // result label
     let resultLabel: UILabel = {
         let label = UILabel()
         label.backgroundColor = .white
@@ -19,85 +22,86 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
         return label
     }()
     
-    fileprivate func positionResultLabel() {
+    // Constraints for the result label
+    fileprivate func setResultLabelConstraints() {
         view.addSubview(resultLabel)
-        resultLabel.heightAnchor.constraint(equalToConstant: 50).isActive = true
-        resultLabel.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
-        resultLabel.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -30).isActive = true
-        resultLabel.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        NSLayoutConstraint.activate([
+            resultLabel.heightAnchor.constraint(equalToConstant: 50),
+            resultLabel.rightAnchor.constraint(equalTo: view.rightAnchor),
+            resultLabel.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -30),
+            resultLabel.leftAnchor.constraint(equalTo: view.leftAnchor)
+        ])
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Create a new capture session using the AVCaptureSession constructor
-        let captureSession = AVCaptureSession()
+        // New session
+        let session = AVCaptureSession()
         
-        // Create a capture device using AVCaptureDevice
+        // Use video
         guard let captureDevice = AVCaptureDevice.default(for: .video) else {return}
         
-        // Create an input for the capture device
+        // Create an input for the device
         guard let input = try? AVCaptureDeviceInput(device: captureDevice) else {return}
         
-        // Set the input to the capture session
-        captureSession.addInput(input)
+        // Add input to session
+        session.addInput(input)
         
-        // Start the capture session
-        captureSession.startRunning()
+        // Start session on background thread
+        DispatchQueue.global(qos: .background).async {
+            session.startRunning()
+        }
         
-        // create a preview layer for the captureSession
-        let previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
-        
-        // add the previewLayer as a sublayer on our main view
-        view.layer.addSublayer(previewLayer)
-        
-        // link view's frame with previewLayer's frame
-        previewLayer.frame = view.frame
+        // layer to view session
+        let preview = AVCaptureVideoPreviewLayer(session: session)
+        view.layer.addSublayer(preview)
+        preview.frame = view.frame
         
         // create the outputData
         let outputData = AVCaptureVideoDataOutput()
         
-        // Sets the sample buffer delegate and the queue for invoking callbacks
-        // first param is an object conforming to the AVCaptureVideoDataOutputSampleBufferDelegate protocol that will receive sample buffers after they are captured.
-        // We must use a serial dispatch queue to guarantee that the video frames will be delivered in order
+        // Set delegate and queue
         outputData.setSampleBufferDelegate(self, queue: DispatchQueue(label: "videoFrames.queue"))
-        captureSession.addOutput(outputData)
+        session.addOutput(outputData)
         
-        positionResultLabel()
+        setResultLabelConstraints()
     }
 
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        // Use the model
         guard let model = try? VNCoreMLModel(for: MobileNetV2(configuration: MLModelConfiguration()).model) else {return}
 
         // Create model request, pass model and print finalisedReq
-        let modelRequest = VNCoreMLRequest(model: model) { (finalisedReq, err) in
+        let modelRequest = VNCoreMLRequest(model: model) { (finalRequest, err) in
             
-            // results will be an array of VNClassificationObservation
-            guard let results = finalisedReq.results as?  [VNClassificationObservation] else { return }
+            // Set results array of type VNClassificationObservation
+            guard let results = finalRequest.results as? [VNClassificationObservation] else { return }
             
-            // Let's get the top VNClassficationObservation
+            // Get the first one
             guard let topResult = results.first else { return }
             
-            // And finally print the identifier and confidence of the top result
             let confidence = Int(floor(topResult.confidence * 100))
-            if confidence > 50 {
-                let resultText = "\(topResult.identifier): \(confidence)%"
+            // Change this if you want a different level of confidence
+            if confidence > 25 {
+                let result = "\(topResult.identifier): \(confidence)%"
                 
+                // Write to the main queue
                 DispatchQueue.main.async {
-                    self.resultLabel.text = resultText
+                    self.resultLabel.text = result
+                }
+            } else {
+                // Remove text on the main queue
+                DispatchQueue.main.async {
+                    self.resultLabel.text = ""
                 }
             }
-//            print(topResult.identifier, topResult.confidence)
         }
 
-        // Cast cvPixelBuffer as CVPixelBuffer
-        // get the image buffer using CMSampleBufferGetImageBuffer
+        // get the image buffer
         guard let cvPixelBuffer: CVPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {return}
 
-        // Handler for all image requests
-        // handles all frames from cvPixelBuffer and performs the model request on each
-        try? VNImageRequestHandler(cvPixelBuffer: cvPixelBuffer, options: [ : ]).perform([modelRequest])
+        // Run model request on each
+        try? VNImageRequestHandler(cvPixelBuffer: cvPixelBuffer, options: [:]).perform([modelRequest])
         
     }
 
